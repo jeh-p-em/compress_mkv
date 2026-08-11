@@ -3,7 +3,7 @@
 version="1.0"
 
 ntfy="019fef32-f77b-70cb-8831-fb48caf399e1"
-compression_lvl="26"
+compression_lvl="28"
 
 find /opt/compress_mkv -type f \( -iname "*.mkv" -o -iname "*.mp4" \) -delete
 rm -rf /opt/compress_mkv/attachments*
@@ -65,7 +65,7 @@ while IFS= read -r -d '' file; do
 		-analyzeduration 100M \
 		-vaapi_device /dev/dri/renderD128 \
 		-i "$tmp_file" \
-		-filter_complex "[0:v:0]format=p010le,hwupload[v]" \
+		-filter_complex "[0:v:0]format=nv12,hwupload[v]" \
 		-map "[v]" \
 		-map 0:a? \
 		-map 0:s? \
@@ -74,6 +74,7 @@ while IFS= read -r -d '' file; do
 		-map_chapters 0 \
 		-metadata comment="COMPRESSED_V$version" \
 		-c:v:0 hevc_vaapi \
+		-rc_mode:v:0 ICQ \
 		-qp:v:0 "$compression_lvl" \
 		-c:v:1 copy \
 		-c:a libopus \
