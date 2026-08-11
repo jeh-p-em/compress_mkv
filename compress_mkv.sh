@@ -66,7 +66,6 @@ while IFS= read -r -d '' file; do
 		-vaapi_device /dev/dri/renderD128 \
 		-i "$tmp_file" \
 		-filter_complex "[0:v:0]format=p010le,hwupload[v]" \
-		-x265-params no-open-gop=1:keyint=600:gop-lookahead=11:bframes=7:weightb=1:hme=1:strong-intra-smoothing=0:rect=0:aq-mode=4 \
 		-map "[v]" \
 		-map 0:a? \
 		-map 0:s? \
@@ -76,8 +75,6 @@ while IFS= read -r -d '' file; do
 		-metadata comment="COMPRESSED_V$version" \
 		-c:v:0 hevc_vaapi \
 		-qp:v:0 "$compression_lvl" \
-		-maxrate 3M \
-		-bufsize 8M \
 		-c:v:1 copy \
 		-c:a libopus \
 		-b:a 128k \
