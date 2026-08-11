@@ -3,6 +3,7 @@
 version="1.0"
 
 ntfy="019fef32-f77b-70cb-8831-fb48caf399e1"
+compression_lvl="26"
 
 find /opt/compress_mkv -type f \( -iname "*.mkv" -o -iname "*.mp4" \) -delete
 rm -rf /opt/compress_mkv/attachments*
@@ -74,7 +75,7 @@ while IFS= read -r -d '' file; do
 		-map_chapters 0 \
 		-metadata comment="COMPRESSED_V$version" \
 		-c:v:0 hevc_vaapi \
-		-qp:v:0 26 \
+		-qp:v:0 "$compression_lvl" \
 		-maxrate 3M \
 		-bufsize 8M \
 		-c:v:1 copy \
