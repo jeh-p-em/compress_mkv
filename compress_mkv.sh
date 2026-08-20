@@ -3,7 +3,7 @@
 version="1.0"
 
 ntfy="019fef32-f77b-70cb-8831-fb48caf399e1"
-compression_lvl="28"
+compression_lvl="24"
 
 find /opt/compress_mkv -type f \( -iname "*.mkv" -o -iname "*.mp4" \) -delete
 rm -rf /opt/compress_mkv/attachments*
@@ -33,6 +33,7 @@ while IFS= read -r -d '' file; do
                 continue
         fi
         before_size=$(( $(stat -c %s "$tmp_file") / 1024 / 1024 ))
+        before_size_mb="${before_size}MB"
         echo "Checking attachments..."
         attachment_count=$(mkvmerge -J "$tmp_file" | jq '.attachments | length')
         if [[ "$attachment_count" -gt 0 ]]; then
@@ -89,21 +90,23 @@ while IFS= read -r -d '' file; do
                         done
                 fi
                 after_size=$(( $(stat -c %s "$output_file") / 1024 / 1024 ))
+                after_size_mb="${after_size}MB"
                 if [[ "$after_size" -gt "$before_size" ]]; then
-                        before_size="${before_size}MB"
-                        after_size="${after_size}MB"
+                        elapsed=$(printf "%02d:%02d:%02d" \
+                                $((SECONDS/3600)) \
+                                $(((SECONDS%3600)/60)) \
+                                $((SECONDS%60)))
                         echo "Did not shrink file size: $file - $before_size > $after_size"
                         curl -s -o /dev/null -d "Compression Failed:
 $basename_file
-$before_size > $after_size" "ntfy.sh/$ntfy"
+$before_size_mb > $after_size_mb
+$elapsed" "ntfy.sh/$ntfy"
                         rm -f -- "$output_file"
                         rm -f -- "$tmp_file"
                         rm -rf -- "$attach_dir"
                         echo "----------------------------------------"
                         continue
                 fi
-                before_size="${before_size}MB"
-                after_size="${after_size}MB"
                 echo "Moving: $output_file to $file"
                 mv -f -- "$output_file" "$file"
                 elapsed=$(printf "%02d:%02d:%02d" \
@@ -113,7 +116,7 @@ $before_size > $after_size" "ntfy.sh/$ntfy"
                 echo "Successfully compressed: $file - $before_size > $after_size"
                 curl -s -o /dev/null -d "File Compressed:
 $basename_file
-$before_size > $after_size
+$before_size_mb > $after_size_mb
 $elapsed" "ntfy.sh/$ntfy"
         else
                 echo "Error compressing: $tmp_file. Original kept."
